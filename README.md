@@ -1,11 +1,14 @@
 # Hashed Wheel Timer [![Build Status](https://travis-ci.org/Spikhalskiy/hashed-wheel-timer.svg?branch=master)](https://travis-ci.org/Spikhalskiy/hashed-wheel-timer)
-Simple Hashed Wheel Timer implementation based on Agrona WheelTimer
+Simple Hashed Wheel Timer implementation based on Agrona WheelTimer.
 
 ## What is it?
 
 Hashed Wheel Timer is an approximate timer with configurable accuracy, which could be used for very efficient single-threaded execution of scheduled tasks. 
+
 This implementation assumes single-writer principle and timers firing on processing thread.
+
 Low (or NO) garbage.
+
 Could be used with JDK6.
 
 ## How to get?

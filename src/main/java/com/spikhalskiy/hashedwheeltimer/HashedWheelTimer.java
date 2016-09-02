@@ -30,6 +30,8 @@
  */
 package com.spikhalskiy.hashedwheeltimer;
 
+import com.spikhalskiy.hashedwheeltimer.Timer.TimerState;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -48,7 +50,7 @@ import java.util.concurrent.TimeUnit;
  * Tony Lauck's paper,
  * <a href="http://cseweb.ucsd.edu/users/varghese/PAPERS/twheel.ps.Z">'Hashed
  * and Hierarchical Timing Wheels: data structures to efficiently implement a
- * timer facility'</a>.  More comprehensive slides are located
+ * timer facility'</a>. More comprehensive slides are located
  * <a href="http://www.cse.wustl.edu/~cdgill/courses/cs6874/TimingWheels.ppt">here</a>.
  *
  * Wheel is backed by arrays. Timer cancellation is O(1). Timer scheduling might be slightly
@@ -67,16 +69,16 @@ import java.util.concurrent.TimeUnit;
 public class HashedWheelTimer {
     public static final int INITIAL_TICK_DEPTH = 16;
 
-    private final long mask;
-    private final long startTimestampNs;
-    private final long tickDurationNs;
-    private final NanoClock clock;
-    private final Timer[][] wheel;
+    protected final long mask;
+    protected final long startTimestampNs;
+    protected final long tickDurationNs;
+    protected final NanoClock clock;
+    protected final Timer[][] wheel;
 
     /**
      * This tick still not executed
      */
-    private long currentTick = 1;
+    protected long currentTick = 1;
 
     /**
      * Construct a timer wheel for use in scheduling timers.
@@ -99,6 +101,7 @@ public class HashedWheelTimer {
      * @param timeUnit      for the tick duration
      * @param ticksPerWheel of the wheel. Must be a power of 2.
      */
+    @SuppressWarnings("unchecked")
     public HashedWheelTimer(final NanoClock clock, final long tickDuration, final TimeUnit timeUnit, final int ticksPerWheel) {
         checkTicksPerWheel(ticksPerWheel);
 
@@ -129,7 +132,7 @@ public class HashedWheelTimer {
      * @return new blank timer
      */
     public Timer newBlankTimer() {
-        return new Timer();
+        return new Timer(this);
     }
 
     /**
@@ -140,9 +143,9 @@ public class HashedWheelTimer {
      * @param task  to execute when timer expires
      * @return {@link Timer} for timer
      */
-    public Timer newTimeout(final long delay, final TimeUnit unit, final Runnable task) {
+    public Timer newTimeout(long delay, TimeUnit unit, Task task) {
         long deadline = nsFromStart() + unit.toNanos(delay);
-        Timer timeout = new Timer(deadline, task);
+        Timer timeout = new Timer(this, deadline, task);
         wheel[timeout.wheelIndex] = addTimeoutToArray(wheel[timeout.wheelIndex], timeout);
         return timeout;
     }
@@ -168,12 +171,12 @@ public class HashedWheelTimer {
      * @param task  to execute when timer expires
      * @throws IllegalArgumentException if timer is active
      */
-    public void rescheduleTimeout(long delay, TimeUnit unit,  Timer timer, Runnable task) {
+    public void rescheduleTimeout(long delay, TimeUnit unit, Timer timer, Task task) {
         if (timer.isActive()) {
             throw new IllegalArgumentException("timer is active");
         }
-        long deadline = nsFromStart() + unit.toNanos(delay);
-        timer.reset(deadline, task);
+        long deadlineNs = nsFromStart() + unit.toNanos(delay);
+        timer.reset(deadlineNs, task);
         wheel[timer.wheelIndex] = addTimeoutToArray(wheel[timer.wheelIndex], timer);
     }
 
@@ -239,7 +242,7 @@ public class HashedWheelTimer {
                 timer.remove();
                 timer.state = TimerState.EXPIRED;
                 ++timersExpired;
-                timer.task.run();
+                timer.task.run(timer);
             } else {
                 timer.remainingRounds--;
             }
@@ -267,7 +270,7 @@ public class HashedWheelTimer {
         }
     }
 
-    protected static Timer[] addTimeoutToArray(Timer[] oldArray, Timer timeout) {
+    protected Timer[] addTimeoutToArray(Timer[] oldArray, Timer timeout) {
         for (int i = 0; i < oldArray.length; i++) {
             if (null == oldArray[i]) {
                 oldArray[i] = timeout;
@@ -282,94 +285,6 @@ public class HashedWheelTimer {
         timeout.tickIndex = oldArray.length;
 
         return newArray;
-    }
-
-    public enum TimerState {
-        ACTIVE,
-        CANCELLED,
-        EXPIRED
-    }
-
-    public final class Timer {
-        private int wheelIndex;
-        private long deadline;
-        private Runnable task;
-        private int tickIndex;
-        private long remainingRounds;
-        private TimerState state;
-
-        public Timer() {
-            this.state = TimerState.CANCELLED;
-        }
-
-        public Timer(final long deadline, final Runnable task) {
-            reset(deadline, task);
-        }
-
-        public void reset(final long deadline, final Runnable task) {
-            this.deadline = deadline;
-            this.task = task;
-
-            final long calculatedIndex = MathUtil.divWithRound(deadline, tickDurationNs);
-            final long ticks = Math.max(calculatedIndex, currentTick);
-            this.wheelIndex = (int)(ticks & mask);
-            this.remainingRounds = (calculatedIndex - currentTick) / wheel.length;
-            this.state = TimerState.ACTIVE;
-        }
-
-        /**
-         * Cancel pending timer. Idempotent.
-         *
-         * @return indication of success or failure
-         */
-        public boolean cancel() {
-            if (isActive()) {
-                remove();
-                state = TimerState.CANCELLED;
-            }
-
-            return true;
-        }
-
-        /**
-         * Is timer active or not
-         *
-         * @return boolean indicating if timer is active or not
-         */
-        public boolean isActive() {
-            return TimerState.ACTIVE == state;
-        }
-
-        /**
-         * Was timer cancelled or not
-         *
-         * @return boolean indicating if timer was cancelled or not
-         */
-        public boolean isCancelled() {
-            return TimerState.CANCELLED == state;
-        }
-
-        /**
-         * Has timer expired or not
-         *
-         * @return boolean indicating if timer has expired or not
-         */
-        public boolean isExpired() {
-            return TimerState.EXPIRED == state;
-        }
-
-        public void remove() {
-            wheel[wheelIndex][tickIndex] = null;
-        }
-
-        public String toString() {
-            return "Timer{" +
-                   "wheelIndex=\'" + wheelIndex + "\'" +
-                   ", tickIndex=\'" + tickIndex + "\'" +
-                   ", deadline=\'" + deadline + "\'" +
-                   ", remainingRounds=\'" + remainingRounds + "\'" +
-                   "}";
-        }
     }
 
     protected final class TimerIterator implements Iterator<Timer> {

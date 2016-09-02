@@ -30,7 +30,6 @@
  */
 package com.spikhalskiy.hashedwheeltimer;
 
-import com.spikhalskiy.hashedwheeltimer.HashedWheelTimer.Timer;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -67,7 +66,7 @@ public class HashedWheelTimerTest {
         controlTimestamp = 0;
         final AtomicLong firedTimestamp = new AtomicLong(-1);
         HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 1024);
-        Runnable task = task(wheel, firedTimestamp);
+        Task task = task(wheel, firedTimestamp);
 
         wheel.newTimeout(5000, TimeUnit.MICROSECONDS, task);
 
@@ -87,7 +86,7 @@ public class HashedWheelTimerTest {
         controlTimestamp = TimeUnit.MILLISECONDS.toNanos(100);
         final AtomicLong firedTimestamp = new AtomicLong(-1);
         HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 1024);
-        Runnable task = task(wheel, firedTimestamp);
+        Task task = task(wheel, firedTimestamp);
 
         wheel.newTimeout(5000, TimeUnit.MICROSECONDS, task);
 
@@ -107,7 +106,7 @@ public class HashedWheelTimerTest {
         controlTimestamp = 0;
         final AtomicLong firedTimestamp = new AtomicLong(-1);
         HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 1024);
-        Runnable task = task(wheel, firedTimestamp);
+        Task task = task(wheel, firedTimestamp);
 
         wheel.newTimeout(5000001, TimeUnit.NANOSECONDS, task);
 
@@ -127,7 +126,7 @@ public class HashedWheelTimerTest {
         controlTimestamp = 0;
         final AtomicLong firedTimestamp = new AtomicLong(-1);
         HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 16);
-        Runnable task = task(wheel, firedTimestamp);
+        Task task = task(wheel, firedTimestamp);
 
         wheel.newTimeout(63, TimeUnit.MILLISECONDS, task);
 
@@ -147,7 +146,7 @@ public class HashedWheelTimerTest {
         controlTimestamp = 0;
         AtomicLong firedTimestamp = new AtomicLong(-1);
         final HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 256);
-        Runnable task = task(wheel, firedTimestamp);
+        Task task = task(wheel, firedTimestamp);
 
         Timer timeout = wheel.newTimeout(63, TimeUnit.MILLISECONDS, task);
 
@@ -175,7 +174,7 @@ public class HashedWheelTimerTest {
         controlTimestamp = 0;
         AtomicLong firedTimestamp = new AtomicLong(-1);
         final HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 256);
-        Runnable task = task(wheel, firedTimestamp);
+        Task task = task(wheel, firedTimestamp);
 
         wheel.newTimeout(15, TimeUnit.MILLISECONDS, task);
 
@@ -197,8 +196,8 @@ public class HashedWheelTimerTest {
         AtomicLong firedTimestamp1 = new AtomicLong(-1);
         AtomicLong firedTimestamp2 = new AtomicLong(-1);
         final HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 256);
-        Runnable task1 = task(wheel, firedTimestamp1);
-        Runnable task2 = task(wheel, firedTimestamp2);
+        Task task1 = task(wheel, firedTimestamp1);
+        Task task2 = task(wheel, firedTimestamp2);
 
         wheel.newTimeout(15, TimeUnit.MILLISECONDS, task1);
         wheel.newTimeout(23, TimeUnit.MILLISECONDS, task2);
@@ -220,8 +219,8 @@ public class HashedWheelTimerTest {
         AtomicLong firedTimestamp1 = new AtomicLong(-1);
         AtomicLong firedTimestamp2 = new AtomicLong(-1);
         final HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 8);
-        Runnable task1 = task(wheel, firedTimestamp1);
-        Runnable task2 = task(wheel, firedTimestamp2);
+        Task task1 = task(wheel, firedTimestamp1);
+        Task task2 = task(wheel, firedTimestamp2);
 
         wheel.newTimeout(15, TimeUnit.MILLISECONDS, task1);
         wheel.newTimeout(15, TimeUnit.MILLISECONDS, task2);
@@ -243,8 +242,8 @@ public class HashedWheelTimerTest {
         AtomicLong firedTimestamp1 = new AtomicLong(-1);
         AtomicLong firedTimestamp2 = new AtomicLong(-1);
         final HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 8);
-        Runnable task1 = task(wheel, firedTimestamp1);
-        Runnable task2 = task(wheel, firedTimestamp2);
+        Task task1 = task(wheel, firedTimestamp1);
+        Task task2 = task(wheel, firedTimestamp2);
 
         wheel.newTimeout(15, TimeUnit.MILLISECONDS, task1);
         wheel.newTimeout(23, TimeUnit.MILLISECONDS, task2);
@@ -266,8 +265,8 @@ public class HashedWheelTimerTest {
         AtomicLong firedTimestamp1 = new AtomicLong(-1);
         AtomicLong firedTimestamp2 = new AtomicLong(-1);
         final HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 8);
-        Runnable task1 = task(wheel, firedTimestamp1);
-        Runnable task2 = task(wheel, firedTimestamp2);
+        Task task1 = task(wheel, firedTimestamp1);
+        Task task2 = task(wheel, firedTimestamp2);
 
         Timer timer = wheel.newTimeout(15, TimeUnit.MILLISECONDS, task1);
 
@@ -304,9 +303,9 @@ public class HashedWheelTimerTest {
     public void shouldExceptionOnReschedulingActiveTimer() {
         controlTimestamp = 0;
         final HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 8);
-        Runnable task = new Runnable() {
+        Task task = new Task() {
             @Override
-            public void run() {
+            public void run(Timer timer) {
                 wheel.clock();
             }
         };
@@ -320,7 +319,7 @@ public class HashedWheelTimerTest {
         controlTimestamp = 0;
         AtomicLong firedTimestamp = new AtomicLong(-1);
         HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 1, TimeUnit.MILLISECONDS, 8);
-        Runnable task = task(wheel, firedTimestamp);
+        Task task = task(wheel, firedTimestamp);
 
         Timer timer1 = wheel.newTimeout(15, TimeUnit.MILLISECONDS, task);
         Timer timer2 = wheel.newTimeout(30, TimeUnit.MILLISECONDS, task);
@@ -340,7 +339,7 @@ public class HashedWheelTimerTest {
         controlTimestamp = 0;
         AtomicLong firedTimestamp = new AtomicLong(-1);
         HashedWheelTimer wheel = new HashedWheelTimer(getControlTimestampClock(), 10, TimeUnit.SECONDS, 8);
-        Runnable task = task(wheel, firedTimestamp);
+        Task task = task(wheel, firedTimestamp);
 
         wheel.newTimeout(12, TimeUnit.SECONDS, task);
 
@@ -362,10 +361,10 @@ public class HashedWheelTimerTest {
         return clock.nanoTime() - startTime;
     }
 
-    private Runnable task(final HashedWheelTimer wheel, final AtomicLong firedTimestamp) {
-        return new Runnable() {
+    private Task task(final HashedWheelTimer wheel, final AtomicLong firedTimestamp) {
+        return new Task() {
             @Override
-            public void run() {
+            public void run(Timer timer) {
                 firedTimestamp.set(wheel.clock().nanoTime());
             }
         };
