@@ -4,7 +4,7 @@
 
     <groupId>com.spikhalskiy</groupId>
     <artifactId>hashed-wheel-timer</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Hashed Wheel Timer</name>
     <description>Simple Hashed Wheel Timer implementation</description>
@@ -23,7 +23,7 @@
         <connection>scm:git:https://github.com/Spikhalskiy/hashed-wheel-timer.git</connection>
         <developerConnection>scm:git:https://github.com/Spikhalskiy/hashed-wheel-timer.git</developerConnection>
         <url>https://github.com/Spikhalskiy/hashed-wheel-timer</url>
-        <tag>v0.2.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
