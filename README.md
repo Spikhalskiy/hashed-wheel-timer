@@ -16,8 +16,8 @@ Could be used with JDK6.
 ```xml
 <dependency>
     <groupId>com.spikhalskiy</groupId>
-    x<artifactId>hashed-wheel-timer</artifactId>
-    <version>0.1.0</version>
+    <artifactId>hashed-wheel-timer</artifactId>
+    <version>0.2.0</version>
 </dependency>
 ```
 
@@ -41,9 +41,9 @@ scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
 
 /*schedule our task to execution, run method of this task would be called
  by the main thread of the scheduler.*/
-wheel.newTimeout(100, TimeUnit.MILLISECONDS, new Runnable() {
+wheel.newTimeout(100, TimeUnit.MILLISECONDS, new Task() {
     @Override
-    public void run() {
+    public void run(Timer timer) {
         ...
     }
 });

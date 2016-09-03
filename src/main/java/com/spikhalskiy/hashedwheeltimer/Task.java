@@ -15,6 +15,14 @@
  */
 package com.spikhalskiy.hashedwheeltimer;
 
+/**
+ * Functional interface to represent a work that should be executed by {@link HashedWheelTimer} on timeout.
+ */
 public interface Task {
+    /**
+     * @param timer {@link Timer} instance caused triggering of this method. Could assume that this timer is in
+     * {@link Timer.TimerState#EXPIRED} state if this call triggered by {@link HashedWheelTimer}. Could be used for
+     * rescheduling for example.
+     */
     void run(Timer timer);
 }
