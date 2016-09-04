@@ -128,7 +128,14 @@ public final class Timer {
         return TimerState.EXPIRED == state;
     }
 
-    public void remove() {
+    /**
+     * @return task associated with this timer
+     */
+    public Task getTask() {
+        return task;
+    }
+
+    protected void remove() {
         wheelTimer.wheel[wheelIndex][tickIndex] = null;
     }
 
@@ -138,6 +145,8 @@ public final class Timer {
                ", tickIndex=\'" + tickIndex + "\'" +
                ", deadline=\'" + deadline + "\'" +
                ", remainingRounds=\'" + remainingRounds + "\'" +
+               ", state=\'" + state + "\'" +
+               ", task=\'" + task + "\'" +
                "}";
     }
 
