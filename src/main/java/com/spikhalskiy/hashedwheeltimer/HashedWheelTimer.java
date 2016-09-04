@@ -1,26 +1,11 @@
 /*
- *  Copyright 2016 Dmitry Spikhalskiy. All Rights Reserved.
+ * Copyright 2016 Dmitry Spikhalskiy. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*
- *  Copyright 2014 - 2016 Real Logic Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -141,13 +126,32 @@ public class HashedWheelTimer {
      * @param delay until timer should expire
      * @param unit  of time for {@code delay}
      * @param task  to execute when timer expires
-     * @return {@link Timer} for timer
+     * @return {@link Timer} for a new scheduled timer
      */
     public Timer newTimeout(long delay, TimeUnit unit, Task task) {
         long deadline = nsFromStart() + unit.toNanos(delay);
         Timer timeout = new Timer(this, deadline, task);
         wheel[timeout.wheelIndex] = addTimeoutToArray(wheel[timeout.wheelIndex], timeout);
         return timeout;
+    }
+
+    /**
+     * Schedule a new timer that runs {@code task} when it expires.
+     *
+     * @param delay until timer should expire
+     * @param unit  of time for {@code delay}
+     * @param task  to execute when timer expires
+     * @return {@link Timer} for a new scheduled timer
+     * @deprecated use {@link #newTimeout(long delay, TimeUnit unit, Task task)}
+     */
+    @Deprecated
+    public Timer newTimeout(long delay, TimeUnit unit, final Runnable task) {
+        return newTimeout(delay, unit, new Task() {
+            @Override
+            public void run(Timer timer) {
+                task.run();
+            }
+        });
     }
 
     /**
@@ -178,6 +182,27 @@ public class HashedWheelTimer {
         long deadlineNs = nsFromStart() + unit.toNanos(delay);
         timer.reset(deadlineNs, task);
         wheel[timer.wheelIndex] = addTimeoutToArray(wheel[timer.wheelIndex], timer);
+    }
+
+
+    /**
+     * Reschedule an expired timer, reusing the {@link Timer} object.
+     *
+     * @param delay until timer should expire
+     * @param unit  of time for {@code delay}
+     * @param timer to reschedule
+     * @param task  to execute when timer expires
+     * @throws IllegalArgumentException if timer is active
+     * @deprecated use {@link #rescheduleTimeout(long delay, TimeUnit unit, Timer timer, Task task)}
+     */
+    @Deprecated
+    public void rescheduleTimeout(long delay, TimeUnit unit, Timer timer, final Runnable task) {
+        rescheduleTimeout(delay, unit, timer, new Task() {
+            @Override
+            public void run(Timer timer) {
+                task.run();
+            }
+        });
     }
 
     /**
