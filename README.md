@@ -1,4 +1,4 @@
-# Hashed Wheel Timer [![Build Status](https://travis-ci.org/Spikhalskiy/hashed-wheel-timer.svg?branch=master)](https://travis-ci.org/Spikhalskiy/hashed-wheel-timer)
+# Hashed Wheel Timer [![Build Status](https://travis-ci.org/Spikhalskiy/hashed-wheel-timer.svg?branch=master)](https://travis-ci.org/Spikhalskiy/hashed-wheel-timer) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.spikhalskiy/hashed-wheel-timer/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.spikhalskiy/hashed-wheel-timer)
 Simple Hashed Wheel Timer implementation based on Agrona WheelTimer.
 
 ## What is it?
