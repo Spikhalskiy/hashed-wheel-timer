@@ -17,7 +17,7 @@ Could be used with JDK6.
 <dependency>
     <groupId>com.spikhalskiy</groupId>
     <artifactId>hashed-wheel-timer</artifactId>
-    <version>0.2.0</version>
+    <version>0.3-RC1</version>
 </dependency>
 ```
 
